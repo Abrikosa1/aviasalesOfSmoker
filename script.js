@@ -13,29 +13,6 @@ const citiesApi = 'dataBase/cities.json',
 
 let city = [];
 
-
-
-const getFlight = (origin, destination, date) => {
-    let url = new URL(CALENDAR);
-    url.searchParams.set('origin', origin);
-    url.searchParams.set('destination', destination);
-    url.searchParams.set('depart_date', date);
-    url.searchParams.set('one_way', 'false');
-    const request = new XMLHttpRequest();
-    request.open('GET', url);
-    request.addEventListener('readystatechange', () => {
-        if (request.readyState !== 4) return;
-
-        if (request.status === 200) {
-            console.log(JSON.parse(request.response));
-            
-        } else {
-            console.error(request.status);
-        }
-    });
-    request.send();
-};
-
 const getData = (url, callback) => {
     const request = new XMLHttpRequest();
 
@@ -81,6 +58,26 @@ const selectCity = (event, input, list) => {
     }
 };
 
+const renderCheapDay = (cheapTicket) => {
+    console.log(cheapTicket);
+};
+
+const renderCheapYear = (cheapTickets) => {
+    console.log(cheapTickets);
+    
+};
+
+const renderCheap = (data, date) => {
+    const cheapTicketYear = JSON.parse(data).best_prices;
+
+    const cheapTicketDay = cheapTicketYear.filter(item => {
+        return item.depart_date === date;
+    });
+
+    renderCheapDay(cheapTicketDay);
+    renderCheapYear(cheapTicketYear);
+};
+
 inputCitiesFrom.addEventListener('input', () => {
     showCity(inputCitiesFrom, dropdownCitiesFrom);
 });
@@ -98,7 +95,25 @@ dropdownCitiesTo.addEventListener('click', () => {
 });
 
 
+formSearch.addEventListener('submit', (event) => {
+    event.preventDefault();
+    
+    const formData = {
+        from: city.find(item => inputCitiesFrom.value === item.name).code,
+        to: city.find(item => inputCitiesTo.value === item.name).code,
+        when: inputDateDepart.value,
+        
+    };
+
+    //шаблонная строка ``
+    const requestData = `?depart_date=${formData.when}&origin=${formData.from}` +
+                        `&destination=${formData.to}&one_way=true`;
+
+    getData(CALENDAR + requestData, response => {
+        renderCheap(response, formData.when);
+    });
+    
+});
+
 getData(citiesApi, 
     data => city = JSON.parse(data).filter(item => item.name));
-
-getFlight('SVX', 'KGD', '2020-05-25');
