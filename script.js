@@ -5,7 +5,8 @@ const formSearch = document.querySelector('.form-search'),
       dropdownCitiesTo = formSearch.querySelector('.dropdown__cities-to'),
       inputDateDepart = formSearch.querySelector('.input__date-depart'),
       cheapestTicket = document.getElementById('cheapest-ticket'),
-      otherCheapTickets = document.getElementById('other-cheap-tickets');
+      otherCheapTickets = document.getElementById('other-cheap-tickets'),
+      message = document.getElementById('message');
 
 const citiesApi = 'dataBase/cities.json',
     proxy = 'https://cors-anywhere.herokuapp.com/',
@@ -204,6 +205,9 @@ dropdownCitiesTo.addEventListener('click', () => {
 
 
 formSearch.addEventListener('submit', (event) => {
+    message.textContent = '';
+    otherCheapTickets.textContent = '';
+    cheapestTicket.textContent = '';
     event.preventDefault();
 
     const formData = {
@@ -213,6 +217,9 @@ formSearch.addEventListener('submit', (event) => {
         
     };
 
+    let errorMsg = '';
+
+
     if (formData.from && formData.to){
         //шаблонная строка ``
         const requestData = `?depart_date=${formData.when}&origin=${formData.from.code}` +
@@ -221,12 +228,19 @@ formSearch.addEventListener('submit', (event) => {
         getData(CALENDAR + requestData, (data) => {
             renderCheap(data, formData.when);
         }, error => {
-            alert('В этом направлении нет рейсов!');
+            errorMsg += '<h3>В этом направлении нет рейсов!</h3>';
+            console.log(error);
+            message.insertAdjacentHTML('afterbegin', errorMsg); 
         });
     } else {
-        alert('Введите корректное название города.');
+        errorMsg += '<h3>Введите корректное название города.</h3>';
     }
     
+
+    message.insertAdjacentHTML('afterbegin', errorMsg); 
+    message.style.display = 'block';
+    console.log(errorMsg); 
+
 });
 
 getData(citiesApi, data => {
